@@ -1,0 +1,8 @@
+#!/bin/sh
+FSSERVER="-h 10.10.0.250"
+PROCESSMAKER=""
+
+SELECT_GRUPOS="SELECT g.codigo, g.nombre AS descripcion, g.CICLO, p.login, p.nombre, p.apellido1, p.apellido2 FROM grupos g, profesores p  WHERE g.tutor_ppal = p.dni"
+GROUP_XML="$(tempfile)"
+mysql $FSSERVER -N -B --xml -e "use itaca; $SELECT_GRUPOS" > "$GROUP_XML"
+
