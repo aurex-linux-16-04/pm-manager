@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# $1 => "original" llxgesc.xml (export from itaca to "aula LliureX")
+
+LLXGESC="$1"
+
+# 1. create new file with line feeds
+LLXGESC_LINES="$(tempfile)"
+
+sed -e "s%<\([^\/]\)%\n<\1%g" "$LLXGESC" > "$LLXGESC_LINES"
+
+# extract "assignatures" to a new xml
+ASSIGNATURES_XML="$(tempfile)"
+sed -e "1,/<assignatures>/d;s%\(<\/assignatures>\)%\n\1%" "$LLXGESC_LINES" | sed -e "/<\/assignatures>/,\$d" > "$ASSIGNATURES_XML"
