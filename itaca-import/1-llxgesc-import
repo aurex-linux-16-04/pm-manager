@@ -30,13 +30,27 @@ sed -e "1,/<assignatures>/d;s%\(<\/assignatures>\)%\n\1%" "$LLXGESC_LINES" | sed
 mysql --local-infile=1 -N -B -e "use itaca; truncate table assignatures; load xml local infile '$ASSIGNATURES_XML' into table assignatures character set utf8 rows identified by '<assignatura>';"
 
 PROFES_XML="$(tempfile)"
+GRUPOASI_XML="$(tempfile)"
 
 sed -e "1,/<professors>/d;s%\(<\/professors>\)%\n\1%" "$LLXGESC_LINES" | sed -e "/<\/professors>/,\$d" > "$PROFES_XML"
 
-# extraer dnis a un fichero
+# extraer dnis :
+sed -ne "/<document>/{s%^.*<document>%%;s%<\/document>.*$%%;p}" "$PROFES_XML" |while read dni; do
 # iterar por dni, parseando su bloque:
-#sed -ne "/005135856W/,/<\/professor>/{/<grupoassignatura>/p}" profes.xml
+	sed -ne "/<document>${dni}/,/<\/professor>/{/<grupoassignatura>/{s%<grupoassignatura>%%;s%#% %;s%<\/grupoassignatura>.*$%%;p}}" "$PROFES_XML" |while read grupo cursoasignatura; do
+		asignatura="$(echo "$cursoasignatura" |cut -c '5-')"
+		cat >> "$GRUPOASI_XML" <<EOF
+<row>
+	<grupo>$grupo</grupo>
+	<asignatura>$asignatura</asignatura>
+	<profesor>$dni</profesor>
+</row>
+EOF
+	done
+done
 
-cp "$PROFES_XML" profes.xml
+mysql --local-infile=1 -N -B -e "use itaca; truncate table grupoasiprof; load xml local infile '$GRUPOASI_XML' into table grupoasiprof character set utf8;"
 
-rm -f "$LLXGESC_LINES" "$ASSIGNATURES_XML" "$PROFES_XML"
+#cat "$GRUPOASI_XML" > grupoasi.xml
+
+rm -f "$LLXGESC_LINES" "$ASSIGNATURES_XML" "$PROFES_XML" "$GRUPOASI_XML"

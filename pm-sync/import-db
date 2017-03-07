@@ -21,4 +21,11 @@ mysql $FSSERVER -N -B --xml -e "use itaca; $SELECT_PROFES" > "$PROF_XML"
 
 mysql $PROCESSMAKER --local-infile=1 -N -B -e "use simple_itaca; truncate table profesores_pm; load xml local infile '$PROF_XML' into table profesores_pm character set utf8;"
 
-rm -f "$GROUP_XML" "$PROF_XML"
+SELECT_GRUPOASI="SELECT g.grupo, g.asignatura as asigcod, a.nom as asignatura , p.login, p.nombre, p.apellido1, p.apellido2 FROM grupoasiprof g, profesores p, assignatures a where g.profesor = p.dni and g.asignatura = a.codi"
+GRUPOASI_XML="$(tempfile)"
+mysql $FSSERVER -N -B --xml -e "use itaca; $SELECT_GRUPOASI" > "$GRUPOASI_XML"
+
+mysql $PROCESSMAKER --local-infile=1 -N -B -e "use simple_itaca; truncate table grupoasiprof_pm; load xml local infile '$GRUPOASI_XML' into table grupoasiprof_pm character set utf8;"
+
+rm -f "$GROUP_XML" "$PROF_XML" "$GRUPOASI_XML"
+
