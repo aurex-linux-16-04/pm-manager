@@ -2,7 +2,16 @@
 FSSERVER="-h 10.10.0.250"
 PROCESSMAKER=""
 
-SELECT_GRUPOS="SELECT g.codigo, g.nombre AS descripcion, g.CICLO, p.login, p.nombre, p.apellido1, p.apellido2 FROM grupos g, profesores p  WHERE g.tutor_ppal = p.dni"
+SELECT_GRUPOS="SELECT g.codigo, g.nombre AS descripcion, g.CICLO, g.familia, LEFT(g.codigo,1) as curso, p.login, p.nombre, p.apellido1, p.apellido2 FROM grupos g, profesores p  WHERE g.tutor_ppal = p.dni"
 GROUP_XML="$(tempfile)"
 mysql $FSSERVER -N -B --xml -e "use itaca; $SELECT_GRUPOS" > "$GROUP_XML"
 
+mysql $PROCESSMAKER --local-infile=1 -N -B -e "use simple_itaca; truncate table grupos_pm; load xml local infile '$GROUP_XML' into table grupos_pm character set utf8;"
+
+SELECT_PROFES="SELECT p.nombre, p.apellido1, p.apellido2, p.login, p.familia, p.activo, p.tutoria FROM profesores p"
+PROF_XML="$(tempfile)"
+mysql $FSSERVER -N -B --xml -e "use itaca; $SELECT_PROFES" > "$PROF_XML"
+
+mysql $PROCESSMAKER --local-infile=1 -N -B -e "use simple_itaca; truncate table profesores_pm; load xml local infile '$PROF_XML' into table profesores_pm character set utf8;"
+
+rm -f "$GROUP_XML" "$PROF_XML"
