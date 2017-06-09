@@ -1,12 +1,36 @@
 #!/bin/sh
+
+get_eval(){
+	FILE_NAME="$1"
+	EVAL_NUM="$(sed -ne "/>Avaluació<\/div>/,+1p" "$FILE_NAME" |tail -1 |sed -e "s%^.*>\(.\+\)<\/div.*$%\1%")"
+	[ "$EVAL_NUM" ] || EVAL_NUM="0"
+	echo "$EVAL_NUM"
+}
+
+bulk_list(){
+	rgrep -l "$REG_EXP" $PM_DIR |while read f; do
+		EVAL_NUM="$(get_eval "$f")"
+		DATE_TIME="$(stat -c %Y "$f")"
+		
+#		echo "${EVAL_NUM} $(printf "%012d" $DATE_TIME) ${f}"
+		echo "$f $DATE_TIME ${EVAL_NUM}"
+	done
+}
+
+
 usage(){
 	echo "Usage: $(basename $0) <GROUP_ID>" >&2
+	exit 1
 }
+
 [ "$1" ] || usage
 GROUP_ID="$1"
 PM_DIR="/opt/processmaker/shared/sites/ausias_wf/files/"
 REG_EXP='<div class="cell">'
 REG_EXP="${REG_EXP}${GROUP_ID}</div>"
 
-rgrep -l "$REG_EXP" $PM_DIR
+#sort by eval, then reverse date (in unix format) and ignore repeated evals (show only de latest)
+bulk_list |sort -k3,3 -k2,2nr |uniq -f2 |cut -f 1 -d " "
+#bulk_list |sort -k3,3 -k2,2n |uniq -f2 |cut -f 1 -d " "
+
 
