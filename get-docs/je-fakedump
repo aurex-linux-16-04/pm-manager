@@ -1,0 +1,12 @@
+#!/bin/sh
+usage(){
+        echo "Usage: $(basename $0) <FILE_NAME>" >&2
+}
+[ "$1" ] || usage
+[ -r "$1" ] || usage
+
+FILE_NAME="${1}.pdf"
+[ -r "$FILE_NAME" ] || usage
+
+PM_DIR="/opt/processmaker/shared/sites/ausias_wf/files/"
+sed -ne "/<html>/,/<\/html>/p" "$FILE_NAME"
