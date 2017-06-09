@@ -1,0 +1,14 @@
+#!/bin/sh
+usage(){
+	echo "Usage: $(basename $0) <FILE_NAME>" >&2
+}
+[ "$1" ] || usage
+[ -r "$1" ] || usage
+
+FILE_NAME="$1"
+PM_DIR="/opt/processmaker/shared/sites/ausias_wf/files/"
+EVAL_NUM="$(sed -ne "/>Avaluació<\/div>/,+1p" "$FILE_NAME" |tail -1 |sed -e "s%^.*>\(.\+\)<\/div.*$%\1%")"
+if [ "$EVAL_NUM" ] ; then 
+	echo "Acta avaluació $EVAL_NUM"
+fi
+

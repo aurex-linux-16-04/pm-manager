@@ -28,28 +28,29 @@ done
 #SELECT_FIN="FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"' ESCAPED BY ‘\\’ LINES TERMINATED BY '\\n' "
 
 SELECT_PRIMEROS="$SELECT_BASE1, DROP_FAMILIA, DROP_CURSO, DROP_GRUPO_CABECERA, $SELECT_BASE2 $SELECT_BASE3 FROM PMT_JEVAL_ACTA_1_revisada WHERE 1"
-SELECT_SEGUNDOS="$SELECT_BASE1, TEXT_FAMILIA, TEXT_CURSO, DROP_GRUPO, $SELECT_BASE2 FROM PMT_JEVAL_ACTA_2_revisada WHERE 1"
+#SELECT_SEGUNDOS="$SELECT_BASE1, TEXT_FAMILIA, TEXT_CURSO, DROP_GRUPO, $SELECT_BASE2 FROM PMT_JEVAL_ACTA_2_revisada WHERE 1"
 
 mysql $PROCESSMAKER -B -e "use simple_itaca; $SELECT_PRIMEROS" | gen_csv > "$OUT_GRUPOS1"
-mysql $PROCESSMAKER -B -e "use simple_itaca; $SELECT_SEGUNDOS" | gen_csv > "$OUT_GRUPOS2_TMP"
+#mysql $PROCESSMAKER -B -e "use simple_itaca; $SELECT_SEGUNDOS" | gen_csv > "$OUT_GRUPOS2_TMP"
 
 
-SELECT_FIRMAS_BASE="SELECT f.TEXTG_MODULO, CONCAT(p.apellido1, ' ', p.apellido2, ', ', p.nombre) as profesor, f.CHECKBOX_ASISTE, f.CHECKBOX_CONFORME, '' as motivo FROM PMT_JEVAL_FIRMAS_2 as f, profesores_pm as p  WHERE CONCAT(p.login, '@ausiasmarch.net') = f.DROP_PROFESOR"
+#SELECT_FIRMAS_BASE="SELECT f.TEXTG_MODULO, CONCAT(p.apellido1, ' ', p.apellido2, ', ', p.nombre) as profesor, f.CHECKBOX_ASISTE, f.CHECKBOX_CONFORME, '' as motivo FROM PMT_JEVAL_FIRMAS_2 as f, profesores_pm as p  WHERE CONCAT(p.login, '@ausiasmarch.net') = f.DROP_PROFESOR"
 
 FIRMAS_TMP="$(tempfile)"
 # iterate over list of APP_NUMBER
-head -1 "$OUT_GRUPOS1" > "$OUT_GRUPOS2"
-cat "$OUT_GRUPOS2_TMP"  |while read line; do
-	APP_NUMBER="$(echo "$line"|cut -f 2 -d \")"
-	SELECT_FIRMAS2="$SELECT_FIRMAS_BASE AND f.APP_NUMBER = '$APP_NUMBER'"
-#	echo $SELECT_FIRMAS2
-	mysql $PROCESSMAKER -B -N -e "use simple_itaca; $SELECT_FIRMAS2" | gen_csv |tr "\n" "," > "$FIRMAS_TMP"
-	if [ -s "$FIRMAS_TMP" ] ; then
-		echo "${line},$(cat "$FIRMAS_TMP")" >> "$OUT_GRUPOS2"
-	fi
-done
+#head -1 "$OUT_GRUPOS1" > "$OUT_GRUPOS2"
+#cat "$OUT_GRUPOS2_TMP"  |while read line; do
+#	APP_NUMBER="$(echo "$line"|cut -f 2 -d \")"
+#	SELECT_FIRMAS2="$SELECT_FIRMAS_BASE AND f.APP_NUMBER = '$APP_NUMBER'"
+##	echo $SELECT_FIRMAS2
+#	mysql $PROCESSMAKER -B -N -e "use simple_itaca; $SELECT_FIRMAS2" | gen_csv |tr "\n" "," > "$FIRMAS_TMP"
+#	if [ -s "$FIRMAS_TMP" ] ; then
+#		echo "${line},$(cat "$FIRMAS_TMP")" >> "$OUT_GRUPOS2"
+#	fi
+#done
 
-echo "creados $OUT_GRUPOS1 y $OUT_GRUPOS2"
+#echo "creados $OUT_GRUPOS1 y $OUT_GRUPOS2"
+echo "creado $OUT_GRUPOS1"
 rm -f "$OUT_GRUPOS2_TMP" "$FIRMAS_TMP"
 #mysql $PROCESSMAKER --local-infile=1 -N -B -e "use simple_itaca; truncate table grupos_pm; load xml local infile '$GROUP_XML' into table grupos_pm character set utf8;"
 

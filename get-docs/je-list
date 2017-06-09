@@ -1,0 +1,12 @@
+#!/bin/sh
+usage(){
+	echo "Usage: $(basename $0) <GROUP_ID>" >&2
+}
+[ "$1" ] || usage
+GROUP_ID="$1"
+PM_DIR="/opt/processmaker/shared/sites/ausias_wf/files/"
+REG_EXP='<div class="cell">'
+REG_EXP="${REG_EXP}${GROUP_ID}</div>"
+
+rgrep -l "$REG_EXP" $PM_DIR
+
