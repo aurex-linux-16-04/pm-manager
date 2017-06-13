@@ -54,3 +54,7 @@ mysql --local-infile=1 -N -B -e "use itaca; truncate table grupoasiprof; load xm
 #cat "$GRUPOASI_XML" > grupoasi.xml
 
 rm -f "$LLXGESC_LINES" "$ASSIGNATURES_XML" "$PROFES_XML" "$GRUPOASI_XML"
+
+UPDATE_TUTOR="UPDATE profesores AS p, grupoasiprof AS g SET p.tutoria = g.grupo WHERE (g.profesor = p.dni AND g.asignatura like 'TU%')"
+mysql --local-infile=1 -N -B -e "use itaca; $UPDATE_TUTOR;"
+
