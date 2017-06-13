@@ -2,11 +2,28 @@
 usage(){
         echo "Usage: $(basename $0) <FILE_NAME>" >&2
 }
+get_eval(){
+	FILE_NAME="$1"
+	EVAL_NUM="$(sed -ne "/>Avaluació<\/div>/,+1p" "$FILE_NAME" |tail -1 |sed -e "s%^.*>\(.\+\)<\/div.*$%\1%")"
+	if [ "$EVAL_NUM" ] ; then
+        	echo "Acta avaluació $EVAL_NUM"
+		return 0
+	fi
+	return 1
+}
+
 [ "$1" ] || usage
-[ -r "$1" ] || usage
 
-FILE_NAME="${1}.pdf"
+FILE_NAME="${1}"
+PDF_NAME="${1}.pdf"
 [ -r "$FILE_NAME" ] || usage
+[ -r "$PDF_NAME" ] || usage
 
-PM_DIR="/opt/processmaker/shared/sites/ausias_wf/files/"
-sed -ne "/<html>/,/<\/html>/p" "$FILE_NAME"
+URL_BASE="http://172.24.0.10/PDFs"
+PM_DIR="/opt/processmaker/workflow/public_html/PDFs/"
+rc=0
+LINK_TEXT="$(get_eval "$FILE_NAME")" || rc=$?
+if [ $rc -eq 0 ]; then
+	LINK_URL="$URL_BASE/$PDF_NAME"
+	echo "<a href='$LINK_URL'>$LINK_TEXT</a>"
+fi
